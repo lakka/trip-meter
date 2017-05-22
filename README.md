@@ -1,4 +1,5 @@
-# trip-meter Community work counter 
+# trip-meter
+Community work counter 
 
 ## Working hours
 
