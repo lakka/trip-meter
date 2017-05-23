@@ -5,11 +5,6 @@ const emailRegexp = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|
 const emailB = new Bacon.Bus()
 const apiResponseB = new Bacon.Bus()
 
-apiResponseB
-  .map(res => res
-    ? <div>Good email!</div>
-    : <div style={{color:'red'}}>Please use the same email account as in your membership application to TRIP!</div>
-  )
 
 const emailDebounced = emailB.debounce(800)
 const erroneousEmailB = emailDebounced
@@ -24,8 +19,13 @@ const validatingEmailB = emailDebounced
   )
   .map(email => <div>Validating email...</div>)
 
+const emailValidatedB = apiResponseB
+  .map(res => res
+    ? <div>Good email!</div>
+    : <div style={{color:'red'}}>Please use the same email account as in your membership application to TRIP!</div>
+  )
 
-const state = erroneousEmailB.merge(validatingEmailB).merge(apiResponseB)
+const state = erroneousEmailB.merge(validatingEmailB).merge(emailValidatedB)
 
 const RegistrationForm = () => 
       <div>
