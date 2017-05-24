@@ -1,5 +1,6 @@
-import React from 'baret';
-import Bacon from 'baconjs';
+import React from 'baret'
+import Bacon from 'baconjs'
+import { browserHistory } from 'react-router'
 const emailRegexp = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 
 const emailB = new Bacon.Bus()
@@ -52,30 +53,43 @@ const passwordsMatchState = passwordsMatchOkP.map(b => b
 
 const notSubmittable = emailOkP.and(passwordOkP).and(passwordsMatchOkP).not().startWith(true).toProperty()
 
-submittedB.toProperty().and(notSubmittable.not()).onValue(alert)
+const validSubmissionP = submittedB.toProperty().and(notSubmittable.not()).filter(v => v)
+
+Bacon.combineWith(
+  (valid, email, pass) => ({email, pass}),
+  validSubmissionP,
+  emailB.toProperty(),
+  passwordB.toProperty()
+).onValue(form => {
+  browserHistory.push('/home')  
+})
+
 
 const RegistrationForm = () => 
       <div>
         <div>Register a new user:</div>
-        <form onSubmit={event => submittedB.push(true)}>
+        <form onSubmit={e => {
+            e.preventDefault()
+            submittedB.push(e)
+          }}>
           <label>
             Email:
             <input type="text"
-              onChange={event => emailB.push(event.target.value)}
+              onChange={e => emailB.push(e.target.value)}
             />
             <div>{emailState}</div>
           </label>
           <label>
             Password:
             <input type="password"
-              onChange={event => passwordB.push(event.target.value)}
+              onChange={e => passwordB.push(e.target.value)}
             />
             <div>{passwordState}</div>
           </label>
           <label>
             Password again:
             <input type="password"
-              onChange={event => passwordAgainB.push(event.target.value)}
+              onChange={e => passwordAgainB.push(e.target.value)}
             />
             <div>{passwordsMatchState}</div>
           </label>
