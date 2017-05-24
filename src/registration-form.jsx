@@ -6,8 +6,7 @@ const emailB = new Bacon.Bus()
 const apiResponseB = new Bacon.Bus()
 const passwordB = new Bacon.Bus()
 const passwordAgainB = new Bacon.Bus()
-let lastPassword = ''
-
+const submittedB = new Bacon.Bus()
 
 const emailDebounced = emailB.debounce(800)
 const emailSyntaxB = emailDebounced
@@ -32,7 +31,6 @@ const emailOkP = apiResponseB.toProperty()
 
 const passwordOkP = passwordB
   .debounce(800)
-  .filter(pass => lastPassword = pass)
   .map(pass => (pass.length > 7))
   .toProperty()
 
@@ -40,22 +38,26 @@ const passwordState = passwordOkP.map(b => b
     ? false
     : <div style={{color:'red'}}>Password too short</div>
   )
-const passwordsMatchOkP = passwordAgainB
+const passwordsMatchOkP = Bacon.combineWith(
+  (pass, passAgain) => pass === passAgain,
+  passwordB.toProperty(),
+  passwordAgainB.toProperty()
+  )
   .debounce(800)
-  .map(passAgain => passAgain === lastPassword)
-  .toProperty()
 
 const passwordsMatchState = passwordsMatchOkP.map(b => b
     ? false
     : <div style={{color:'red'}}>Passwords don't match</div>
   )
 
-const notSubmittable = emailOkP.and(passwordOkP).and(passwordsMatchOkP).not().startWith(true)
+const notSubmittable = emailOkP.and(passwordOkP).and(passwordsMatchOkP).not().startWith(true).toProperty()
+
+submittedB.toProperty().and(notSubmittable.not()).onValue(alert)
 
 const RegistrationForm = () => 
       <div>
         <div>Register a new user:</div>
-        <form>
+        <form onSubmit={event => submittedB.push(true)}>
           <label>
             Email:
             <input type="text"
