@@ -4,6 +4,7 @@ import { browserHistory } from 'react-router'
 const emailRegexp = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 
 const emailB = new Bacon.Bus()
+const emailExistsB = new Bacon.Bus()
 const apiResponseB = new Bacon.Bus()
 const passwordB = new Bacon.Bus()
 const passwordAgainB = new Bacon.Bus()
@@ -15,18 +16,29 @@ const emailSyntaxB = emailDebounced
 
 const validatingEmailB = emailDebounced
   .filter(email => email.match(emailRegexp))
-  .filter(e => fetch(`http://localhost:3001/check/${e}`)
+  .filter(e => fetch(`http://localhost:3001/exists/${e}`)
     .then(res => res.json())
-    .then(res => apiResponseB.push(res))
+    .then(res => emailExistsB.push(res))
   )
 
-const emailState = Bacon.when(
-    [emailSyntaxB], () => <div style={{color:'red'}}>Erroneous email</div>,
-    [validatingEmailB], () => <div>Validating email...</div>,
-    [apiResponseB], (res) => res
-      ? <div>Email OK!</div>
-      : <div style={{color:'red'}}>Please use the same email account as in your membership application to TRIP!</div>
-  )
+Bacon.when(
+  [validatingEmailB, emailExistsB.filter(b => !b)],
+  email => fetch(`http://localhost:3001/check/${email}`)
+    .then(res => res.json())
+    .then(res => apiResponseB.push(res))
+  ).onValue(() => null)
+
+const emailState = Bacon.update(
+  false,
+  [emailSyntaxB], () => <div style={{color:'red'}}>Erroneous email</div>,
+  [validatingEmailB], () => <div>Validating email...</div>,
+  [emailExistsB], (prev, val) => val
+    ? <div style={{color:'red'}}>There is already an account associated with this email!</div>
+    : prev,
+  [apiResponseB], (prev, res) => res
+    ? <div>Email OK!</div>
+    : <div style={{color:'red'}}>Please use the same email account as in your membership application to TRIP!</div>
+)
 
 const emailOkP = apiResponseB.toProperty()
 
@@ -51,8 +63,9 @@ const passwordsMatchState = passwordsMatchOkP.map(b => b
     : <div style={{color:'red'}}>Passwords don't match</div>
   )
 
-const notSubmittable = emailOkP.and(passwordOkP).and(passwordsMatchOkP).not().startWith(true).toProperty()
+//const notSubmittable = emailOkP.and(passwordOkP).and(passwordsMatchOkP).not().startWith(true).toProperty()
 
+const notSubmittable = Bacon.constant(false)
 const validSubmissionP = submittedB.toProperty().and(notSubmittable.not()).filter(v => v)
 
 Bacon.combineWith(
@@ -61,7 +74,17 @@ Bacon.combineWith(
   emailB.toProperty(),
   passwordB.toProperty()
 ).onValue(form => {
-  browserHistory.push('/home')  
+  console.log(form)
+  fetch('http://localhost:3001/register', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(form),
+  })
+  .then(console.log)
+  //browserHistory.push('/home')
 })
 
 
