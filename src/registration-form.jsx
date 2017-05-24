@@ -17,16 +17,25 @@ const emailSyntaxB = emailDebounced
 const validatingEmailB = emailDebounced
   .filter(email => email.match(emailRegexp))
   .filter(email => fetch(`http://localhost:3001/exists/${email}`)
-    .then(res => res.json())
+    .then(res => res.ok
+      ? res.json()
+      : Promise.reject(res)
+    )
     .then(res => emailExistsB.push(res))
+    .catch(err => emailExistsB.error(err))
   )
 
-Bacon.when(
-  [validatingEmailB, emailExistsB.filter(b => !b)],
-  email => fetch(`http://localhost:3001/check/${email}`)
-    .then(res => res.json())
-    .then(res => apiResponseB.push(res))
-  ).onValue(() => null)
+emailExistsB.mapError(e => true).zip(validatingEmailB)
+  .filter(([exists]) => !exists)
+  .onValue(([exists, email]) => 
+    fetch(`http://localhost:3001/check/${email}`)
+      .then(res => res.ok
+        ? res.json()
+        : Promise.reject(res)
+      )
+      .then(res => apiResponseB.push(res))
+      .catch(err => apiResponseB.error(err))
+    )
 
 const emailState = Bacon.update(
   <div>&nbsp;</div>,
@@ -39,6 +48,8 @@ const emailState = Bacon.update(
     ? <div>Email OK!</div>
     : <div style={{color:'red'}}>Please use the same email account as in your membership application to TRIP!</div>
 )
+.mapError(err => <div style={{color:'red'}}>Server error! Please try again.</div>)
+
 
 const emailOkP = apiResponseB.toProperty()
 
