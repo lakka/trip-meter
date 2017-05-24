@@ -66,9 +66,9 @@ const passwordsMatchState = passwordsMatchOkP.map(b => b
   )
   .startWith(<div>&nbsp;</div>)
 
-const notSubmittable = emailOkP.and(passwordOkP).and(passwordsMatchOkP).not().startWith(true).toProperty()
+const submittableP = emailOkP.and(passwordOkP).and(passwordsMatchOkP).startWith(false).toProperty()
 
-const validSubmissionP = submittedB.toProperty().and(notSubmittable.not()).filter(v => v)
+const validSubmissionP = submittedB.toProperty().and(submittableP).filter(v => v)
 
 Bacon.combineWith(
   (valid, email, pass) => ({email, pass}),
@@ -118,7 +118,7 @@ const RegistrationForm = () =>
             />
             <div>{passwordsMatchState}</div>
           </label>
-          <input type="submit" value="submit" disabled={notSubmittable} />
+          <input type="submit" value="submit" disabled={submittableP.not()} />
         </form>
       </div>
 
