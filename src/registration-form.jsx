@@ -4,12 +4,14 @@ const emailRegexp = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|
 
 const emailB = new Bacon.Bus()
 const apiResponseB = new Bacon.Bus()
+const passwordB = new Bacon.Bus()
+const passwordAgainB = new Bacon.Bus()
+let lastPassword = ''
 
 
 const emailDebounced = emailB.debounce(800)
-const erroneousEmailB = emailDebounced
+const emailSyntaxB = emailDebounced
   .filter(email => !email.match(emailRegexp))
-  .map(email => <div style={{color:'red'}}>Erroneous email</div>)
 
 const validatingEmailB = emailDebounced
   .filter(email => email.match(emailRegexp))
@@ -17,15 +19,38 @@ const validatingEmailB = emailDebounced
     .then(res => res.json())
     .then(res => apiResponseB.push(res))
   )
-  .map(email => <div>Validating email...</div>)
 
-const emailValidatedB = apiResponseB
-  .map(res => res
-    ? <div>Good email!</div>
-    : <div style={{color:'red'}}>Please use the same email account as in your membership application to TRIP!</div>
+const emailState = Bacon.when(
+    [emailSyntaxB], () => <div style={{color:'red'}}>Erroneous email</div>,
+    [validatingEmailB], () => <div>Validating email...</div>,
+    [apiResponseB], (res) => res
+      ? <div>Email OK!</div>
+      : <div style={{color:'red'}}>Please use the same email account as in your membership application to TRIP!</div>
   )
 
-const state = erroneousEmailB.merge(validatingEmailB).merge(emailValidatedB)
+const emailOkP = apiResponseB.toProperty()
+
+const passwordOkP = passwordB
+  .debounce(800)
+  .filter(pass => lastPassword = pass)
+  .map(pass => (pass.length > 7))
+  .toProperty()
+
+const passwordState = passwordOkP.map(b => b
+    ? false
+    : <div style={{color:'red'}}>Password too short</div>
+  )
+const passwordsMatchOkP = passwordAgainB
+  .debounce(800)
+  .map(passAgain => passAgain === lastPassword)
+  .toProperty()
+
+const passwordsMatchState = passwordsMatchOkP.map(b => b
+    ? false
+    : <div style={{color:'red'}}>Passwords don't match</div>
+  )
+
+const notSubmittable = emailOkP.and(passwordOkP).and(passwordsMatchOkP).not().startWith(true)
 
 const RegistrationForm = () => 
       <div>
@@ -36,14 +61,23 @@ const RegistrationForm = () =>
             <input type="text"
               onChange={event => emailB.push(event.target.value)}
             />
-            <div>{state}</div>
+            <div>{emailState}</div>
           </label>
           <label>
             Password:
             <input type="password"
+              onChange={event => passwordB.push(event.target.value)}
             />
+            <div>{passwordState}</div>
           </label>
-          <input type="submit" value="submit" />
+          <label>
+            Password again:
+            <input type="password"
+              onChange={event => passwordAgainB.push(event.target.value)}
+            />
+            <div>{passwordsMatchState}</div>
+          </label>
+          <input type="submit" value="submit" disabled={notSubmittable} />
         </form>
       </div>
 
