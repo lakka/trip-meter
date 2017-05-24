@@ -16,7 +16,7 @@ const emailSyntaxB = emailDebounced
 
 const validatingEmailB = emailDebounced
   .filter(email => email.match(emailRegexp))
-  .filter(e => fetch(`http://localhost:3001/exists/${e}`)
+  .filter(email => fetch(`http://localhost:3001/exists/${email}`)
     .then(res => res.json())
     .then(res => emailExistsB.push(res))
   )
@@ -29,7 +29,7 @@ Bacon.when(
   ).onValue(() => null)
 
 const emailState = Bacon.update(
-  false,
+  <div>&nbsp;</div>,
   [emailSyntaxB], () => <div style={{color:'red'}}>Erroneous email</div>,
   [validatingEmailB], () => <div>Validating email...</div>,
   [emailExistsB], (prev, val) => val
@@ -48,9 +48,11 @@ const passwordOkP = passwordB
   .toProperty()
 
 const passwordState = passwordOkP.map(b => b
-    ? false
+    ? <div>&nbsp;</div>
     : <div style={{color:'red'}}>Password too short</div>
   )
+  .startWith(<div>&nbsp;</div>)
+
 const passwordsMatchOkP = Bacon.combineWith(
   (pass, passAgain) => pass === passAgain,
   passwordB.toProperty(),
@@ -59,13 +61,13 @@ const passwordsMatchOkP = Bacon.combineWith(
   .debounce(800)
 
 const passwordsMatchState = passwordsMatchOkP.map(b => b
-    ? false
+    ? <div>&nbsp;</div>
     : <div style={{color:'red'}}>Passwords don't match</div>
   )
+  .startWith(<div>&nbsp;</div>)
 
-//const notSubmittable = emailOkP.and(passwordOkP).and(passwordsMatchOkP).not().startWith(true).toProperty()
+const notSubmittable = emailOkP.and(passwordOkP).and(passwordsMatchOkP).not().startWith(true).toProperty()
 
-const notSubmittable = Bacon.constant(false)
 const validSubmissionP = submittedB.toProperty().and(notSubmittable.not()).filter(v => v)
 
 Bacon.combineWith(
