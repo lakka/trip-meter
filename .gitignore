@@ -24,3 +24,4 @@ yarn-error.log*
 /server/token
 *.sqlite
 .foreverignore
+/server/pass
