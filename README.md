@@ -1,6 +1,8 @@
 # trip-meter
 This is an app for Teekkaripurjehtijat ry for marking and administering community work hours done by its members.
 
+The software will run on Google Apps Script.
+
 ## Working hours
 
 https://docs.google.com/spreadsheets/d/1o8J4zmnZTU9AIQOoqr3w8RWgqzw_iOsXOyM-dHlmsqo/edit?usp=sharing
