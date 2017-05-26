@@ -3,6 +3,8 @@ This is an app for Teekkaripurjehtijat ry for marking and administering communit
 
 The software will run on Google Apps Script.
 
+To run the software, run `npm install`, `npm start` and `node server/app.js`.
+
 ## Working hours
 
 https://docs.google.com/spreadsheets/d/1o8J4zmnZTU9AIQOoqr3w8RWgqzw_iOsXOyM-dHlmsqo/edit?usp=sharing
