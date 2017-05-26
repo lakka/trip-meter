@@ -1,5 +1,5 @@
 # trip-meter
-Community work counter 
+This is an app for Teekkaripurjehtijat ry for marking and administering community work hours done by its members.
 
 ## Working hours
 
