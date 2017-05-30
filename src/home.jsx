@@ -8,7 +8,7 @@ const renderHome = (status) =>
   </div>
 
 const Home = () => {
-const status = Bacon.fromPromise(fetch('/api/home', {credentials: 'include'})
+const status = Bacon.fromPromise(fetch('/api/home', {credentials: 'same-origin'})
   .then(res => res.ok
     ? res.json()
     : browserHistory.push('/login')
