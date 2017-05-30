@@ -76,7 +76,7 @@ app.post('/api/login', (req, res) => {
       res.sendStatus(500)
       res.send(err)
     } else {
-      if(!row) res.sendStatus(404)
+      if(!row) res.sendStatus(401)
       else {
         hash.update(req.body.pass + row.salt)
         if(hash.digest('hex') === row.password_hash) {
