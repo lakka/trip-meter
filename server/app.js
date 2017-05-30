@@ -90,7 +90,7 @@ app.post('/api/login', (req, res) => {
 })
 
 app.get('/api/home', restrict, (req, res) => {
-  res.sendStatus(204)
+  res.status(200).json({email:req.session.email})
   res.end()
 })
 app.listen(3001);
