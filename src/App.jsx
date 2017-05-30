@@ -8,7 +8,7 @@ import Home from './home'
 
 const Root = () =>
   <Router history={browserHistory}>
-    <Route path='/' component={RegistrationForm} />
+    <Route path='/register' component={RegistrationForm} />
     <Route path='/home' component={Home} />
   </Router>
 
