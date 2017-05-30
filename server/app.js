@@ -26,16 +26,20 @@ app.get('/*',function(req,res,next){
   next();
 });
 
+app.post('/*',function(req,res,next){
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+});
+
 app.options("/*", function(req, res, next){
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, Content-Length, X-Requested-With');
-  res.send(200);
+  res.sendStatus(200)
 });
 
 
 function restrict(req, res, next) {
-  console.log(req.session)
   if (req.session.email) {
       next()
     } else {
@@ -69,10 +73,12 @@ app.post('/register', (req, res) => {
     $hash: hash.digest('hex'),
     $salt: salt
   })
-  .then(() => res.sendStatus(204))
+  .then(() => {
+    res.status(200).json(req.body)
+  })
   .catch(err => {
+    console.log(err)
     res.sendStatus(500)
-    res.send(err)
   })
   .finally(() => res.end())
 })
