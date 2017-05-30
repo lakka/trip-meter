@@ -77,8 +77,9 @@ const passwordsMatchState = passwordsMatchOkP.map(b => b
   )
   .startWith(<div>&nbsp;</div>)
 
-const submittableP = emailOkP.and(passwordOkP).and(passwordsMatchOkP).startWith(false).toProperty()
+//const submittableP = emailOkP.and(passwordOkP).and(passwordsMatchOkP).startWith(false).toProperty()
 
+const submittableP = Bacon.constant(true)
 const validSubmissionP = submittedB.toProperty().and(submittableP).filter(v => v)
 
 Bacon.combineWith(
@@ -87,7 +88,6 @@ Bacon.combineWith(
   emailB.toProperty(),
   passwordB.toProperty()
 ).onValue(form => {
-  console.log(form)
   fetch('http://localhost:3001/register', {
     method: 'POST',
     headers: {
@@ -96,8 +96,20 @@ Bacon.combineWith(
     },
     body: JSON.stringify(form),
   })
-  .then(console.log)
-  //browserHistory.push('/home')
+  .then(res => res.ok ? res.json() : Promise.reject()) 
+  .then(form =>
+    fetch('http://localhost:3001/login', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(form)
+    })
+  )
+  .then(res => res.ok ? Promise.resolve() : Promise.reject())
+  .then(() => browserHistory.push('/home'))
+  .catch(console.log)
 })
 
 
