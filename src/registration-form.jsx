@@ -16,7 +16,7 @@ const emailSyntaxB = emailDebounced
 
 const validatingEmailB = emailDebounced
   .filter(email => email.match(emailRegexp))
-  .filter(email => fetch(`http://localhost:3001/exists/${email}`)
+  .filter(email => fetch(`/api/exists/${email}`)
     .then(res => res.ok
       ? res.json()
       : Promise.reject(res)
@@ -28,7 +28,7 @@ const validatingEmailB = emailDebounced
 emailExistsB.mapError(e => true).zip(validatingEmailB)
   .filter(([exists]) => !exists)
   .onValue(([exists, email]) => 
-    fetch(`http://localhost:3001/check/${email}`)
+    fetch(`/api/check/${email}`)
       .then(res => res.ok
         ? res.json()
         : Promise.reject(res)
@@ -79,7 +79,7 @@ const passwordsMatchState = passwordsMatchOkP.map(b => b
 
 //const submittableP = emailOkP.and(passwordOkP).and(passwordsMatchOkP).startWith(false).toProperty()
 
-const submittableP = Bacon.constant(true)
+const submittableP = passwordOkP
 const validSubmissionP = submittedB.toProperty().and(submittableP).filter(v => v)
 
 Bacon.combineWith(
@@ -88,7 +88,7 @@ Bacon.combineWith(
   emailB.toProperty(),
   passwordB.toProperty()
 ).onValue(form => {
-  fetch('http://localhost:3001/register', {
+  fetch('/api/register', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
@@ -98,12 +98,13 @@ Bacon.combineWith(
   })
   .then(res => res.ok ? res.json() : Promise.reject()) 
   .then(form =>
-    fetch('http://localhost:3001/login', {
+    fetch('/api/login', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(form)
     })
   )
@@ -145,5 +146,5 @@ const RegistrationForm = () =>
         </form>
       </div>
 
-export default RegistrationForm;
+export default RegistrationForm
 

@@ -21,24 +21,6 @@ app.use(session({
   secret: 'pökkeli'
 }));
 
-app.get('/*',function(req,res,next){
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  next();
-});
-
-app.post('/*',function(req,res,next){
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  next();
-});
-
-app.options("/*", function(req, res, next){
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, Content-Length, X-Requested-With');
-  res.sendStatus(200)
-});
-
-
 function restrict(req, res, next) {
   if (req.session.email) {
       next()
@@ -47,12 +29,12 @@ function restrict(req, res, next) {
       res.end()
     }
 }
-app.get('/check/:email', (req, serverRes) => {
+app.get('/api/check/:email', (req, serverRes) => {
   rp(`https://script.google.com/macros/s/AKfycbyEu4c1yuHpiyo0O_LwQ-8pK6ySTgU7UkA-Wihm_YWhKaPaPtM/exec?type=emailExists&email=${req.params.email}&token=${apiToken}`)
     .then(body => serverRes.send(JSON.parse(body).isRegistered))
 })
 
-app.get('/exists/:email', (req, res) => {
+app.get('/api/exists/:email', (req, res) => {
   db.get('SELECT email FROM users WHERE email = ?', req.params.email, (err, row) => {
       if(err) {
         res.sendStatus(500)
@@ -64,7 +46,7 @@ app.get('/exists/:email', (req, res) => {
     })
 })
 
-app.post('/register', (req, res) => {
+app.post('/api/register', (req, res) => {
   const hash = crypto.createHash('sha256')
   const salt = Math.floor(Math.random()*1000000000)
   hash.update(req.body.pass + salt)
@@ -83,7 +65,7 @@ app.post('/register', (req, res) => {
   .finally(() => res.end())
 })
 
-app.post('/login', (req, res) => {
+app.post('/api/login', (req, res) => {
   const hash = crypto.createHash('sha256')
   if(!req.body.email || !req.body.pass) {
     res.sendStatus(400)
@@ -108,7 +90,7 @@ app.post('/login', (req, res) => {
   })
 })
 
-app.get('/home', restrict, (req, res) => {
+app.get('/api/home', restrict, (req, res) => {
   res.sendStatus(204)
   res.end()
 })
