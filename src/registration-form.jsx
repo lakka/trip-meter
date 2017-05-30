@@ -113,7 +113,6 @@ Bacon.combineWith(
   .catch(console.log)
 })
 
-
 const RegistrationForm = () => 
       <div>
         <div>Register a new user:</div>
