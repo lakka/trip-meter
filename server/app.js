@@ -8,7 +8,7 @@ const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 const apiToken = fs.readFileSync(path.join(__dirname, 'token'))
-const session = BPromise.promisifyAll(require('express-session'))
+const session = BPromise.promisifyAll(require('cookie-session'))
 
 const app = express()
 
@@ -16,9 +16,8 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
 app.use(session({
-  resave: false, // don't save session if unmodified
-  saveUninitialized: false, // don't create session until something stored
-  secret: 'pökkeli'
+  name: 'session',
+  keys: ['pökkeli', 'kakkeli']
 }));
 
 function restrict(req, res, next) {
