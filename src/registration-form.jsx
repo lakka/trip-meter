@@ -14,6 +14,8 @@ const emailDebounced = emailB.debounce(800)
 const emailSyntaxB = emailDebounced
   .filter(email => !email.match(emailRegexp))
 
+const errorDiv = (selector, msg) => <div className={'error ' + selector}>{msg}</div>
+
 const validatingEmailB = emailDebounced
   .filter(email => email.match(emailRegexp))
   .filter(email => fetch(`/api/exists/${email}`)
@@ -39,16 +41,16 @@ emailExistsB.mapError(e => true).zip(validatingEmailB)
 
 const emailState = Bacon.update(
   <div>&nbsp;</div>,
-  [emailSyntaxB], () => <div style={{color:'red'}}>Erroneous email</div>,
+  [emailSyntaxB], () => errorDiv('email', 'Erroneous email'),
   [validatingEmailB], () => <div>Validating email...</div>,
   [emailExistsB], (prev, val) => val
     ? <div style={{color:'red'}}>There is already an account associated with this email!</div>
     : prev,
   [apiResponseB], (prev, res) => res
     ? <div>Email OK!</div>
-    : <div style={{color:'red'}}>Please use the same email account as in your membership application to TRIP!</div>
+    : errorDiv('email', 'Please use the same email account as in your membership application to TRIP!')
 )
-.mapError(err => <div style={{color:'red'}}>Server error! Please try again.</div>)
+.mapError(err => errorDiv('email', 'Server error! Please try again.'))
 
 
 const emailOkP = apiResponseB.toProperty()
@@ -60,7 +62,7 @@ const passwordOkP = passwordB
 
 const passwordState = passwordOkP.map(b => b
     ? <div>&nbsp;</div>
-    : <div style={{color:'red'}}>Password too short</div>
+    : errorDiv('pass', 'Password too short!')
   )
   .startWith(<div>&nbsp;</div>)
 
@@ -73,13 +75,12 @@ const passwordsMatchOkP = Bacon.combineWith(
 
 const passwordsMatchState = passwordsMatchOkP.map(b => b
     ? <div>&nbsp;</div>
-    : <div style={{color:'red'}}>Passwords don't match</div>
+    : errorDiv('passAgain', 'Passwords don\'t match')
   )
   .startWith(<div>&nbsp;</div>)
 
-//const submittableP = emailOkP.and(passwordOkP).and(passwordsMatchOkP).startWith(false).toProperty()
+const submittableP = emailOkP.and(passwordOkP).and(passwordsMatchOkP).startWith(false).toProperty()
 
-const submittableP = passwordOkP
 const validSubmissionP = submittedB.toProperty().and(submittableP).filter(v => v)
 
 Bacon.combineWith(
@@ -122,26 +123,26 @@ const RegistrationForm = () =>
           }}>
           <label>
             Email:
-            <input type="text"
+            <input type="text" id="email"
               onChange={e => emailB.push(e.target.value)}
             />
             <div>{emailState}</div>
           </label>
           <label>
             Password:
-            <input type="password"
+            <input type="password" id="password"
               onChange={e => passwordB.push(e.target.value)}
             />
             <div>{passwordState}</div>
           </label>
           <label>
             Password again:
-            <input type="password"
+            <input type="password" id="password-again"
               onChange={e => passwordAgainB.push(e.target.value)}
             />
             <div>{passwordsMatchState}</div>
           </label>
-          <input type="submit" value="submit" disabled={submittableP.not()} />
+          <input type="submit" value="submit" id="submit" disabled={submittableP.not()} />
         </form>
       </div>
 

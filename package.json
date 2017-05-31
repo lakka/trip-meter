@@ -52,6 +52,8 @@
     "style-loader": "0.17.0",
     "sw-precache-webpack-plugin": "0.9.1",
     "url-loader": "0.5.8",
+    "wdio-mocha-framework": "^0.5.10",
+    "webdriverio": "^4.8.0",
     "webpack": "2.5.1",
     "webpack-dev-server": "2.4.5",
     "webpack-manifest-plugin": "1.1.0",
