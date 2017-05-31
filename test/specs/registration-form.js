@@ -15,7 +15,7 @@ describe('Registration page', function() {
     assert.equal(browser.isVisibleWithinViewport('#submit'), true)
     assert.equal(browser.isEnabled('#submit'), false)
   })
-  it.only('should show error on invalid email', function () {
+  it('should show error on invalid email', function () {
     browser.setValue('#email', 'jeesus')
     const error = $('.error')
     error.waitForExist(1000)
