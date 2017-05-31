@@ -5,13 +5,12 @@ import { browserHistory } from 'react-router'
 const submittedB = new Bacon.Bus()
 const emailB = new Bacon.Bus()
 const passwordB = new Bacon.Bus()
-const errorB = new Bacon.Bus()
 
 const error = Bacon.when(
   [submittedB, emailB.toProperty(), passwordB.toProperty()],
   (_, email, pass) => ({email, pass}))
-  .onValue(form =>
-    fetch('/api/login', {
+  .flatMap(form =>
+    Bacon.fromPromise(fetch('/api/login', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -22,10 +21,9 @@ const error = Bacon.when(
     })
     .then(res => res.ok
       ? browserHistory.push('/home')
-      : errorB.push(<div>Invalid username or password!</div>)
-    )
+      : Promise.resolve(<div>Invalid username or password!</div>)
+    ))
   )
-
 
 const Login = () => 
   <div>
@@ -46,7 +44,7 @@ const Login = () =>
           onChange={e => passwordB.push(e.target.value)}
         />
       </label>
-      <div>{errorB}</div>
+      <div>{error}</div>
       <input type="submit" value="log in" onSubmit={e => submittedB.push(true)} />
     </form>
   </div>
