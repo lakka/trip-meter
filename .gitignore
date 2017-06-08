@@ -26,3 +26,4 @@ yarn-error.log*
 .foreverignore
 /server/pass
 /errorShots
+*.log
