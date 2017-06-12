@@ -14,7 +14,7 @@ const emailDebounced = emailB.debounce(800)
 const emailSyntaxB = emailDebounced
   .filter(email => !email.match(emailRegexp))
 
-const errorDiv = (selector, msg) => <div className={'error ' + selector}>{msg}</div>
+const errorDiv = (id, msg) => <div id={id} className='error'>{msg}</div>
 
 const validatingEmailB = emailDebounced
   .filter(email => email.match(emailRegexp))
@@ -41,17 +41,16 @@ emailExistsB.mapError(e => true).zip(validatingEmailB)
 
 const emailState = Bacon.update(
   <div>&nbsp;</div>,
-  [emailSyntaxB], () => errorDiv('email', 'Erroneous email'),
+  [emailSyntaxB], () => errorDiv('email-syntax-error', 'Erroneous email'),
   [validatingEmailB], () => <div>Validating email...</div>,
   [emailExistsB], (prev, val) => val
-    ? <div style={{color:'red'}}>There is already an account associated with this email!</div>
+    ? errorDiv('email-exists-error', 'There is already an account associated with this email!')
     : prev,
   [apiResponseB], (prev, res) => res
     ? <div>Email OK!</div>
-    : errorDiv('email', 'Please use the same email account as in your membership application to TRIP!')
+    : errorDiv('email-trip-error', 'Please use the same email account as in your membership application to TRIP!')
 )
-.mapError(err => errorDiv('email', 'Server error! Please try again.'))
-
+.mapError(err => errorDiv('email-server-error', 'Server error! Please try again.'))
 
 const emailOkP = apiResponseB.toProperty()
 
@@ -62,7 +61,7 @@ const passwordOkP = passwordB
 
 const passwordState = passwordOkP.map(b => b
     ? <div>&nbsp;</div>
-    : errorDiv('pass', 'Password too short!')
+    : errorDiv('pass-syntax-error', 'Password too short!')
   )
   .startWith(<div>&nbsp;</div>)
 
@@ -75,7 +74,7 @@ const passwordsMatchOkP = Bacon.combineWith(
 
 const passwordsMatchState = passwordsMatchOkP.map(b => b
     ? <div>&nbsp;</div>
-    : errorDiv('passAgain', 'Passwords don\'t match')
+    : errorDiv('pass-no-match-error', 'Passwords don\'t match')
   )
   .startWith(<div>&nbsp;</div>)
 
