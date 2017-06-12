@@ -1,12 +1,12 @@
+const path = require('path')
 const express = require('express')
 const bodyParser = require('body-parser')
 const rp = require('request-promise')
 const sqlite3 = require('sqlite3').verbose()
 const BPromise = require('bluebird')
-const db = BPromise.promisifyAll(new sqlite3.Database('db.sqlite'))
+const db = BPromise.promisifyAll(new sqlite3.Database(path.join(__dirname, 'db.sqlite')))
 const crypto = require('crypto')
 const fs = require('fs')
-const path = require('path')
 const apiToken = fs.readFileSync(path.join(__dirname, 'token'))
 const session = BPromise.promisifyAll(require('cookie-session'))
 
@@ -36,6 +36,7 @@ app.get('/api/check/:email', (req, serverRes) => {
 app.get('/api/exists/:email', (req, res) => {
   db.get('SELECT email FROM users WHERE email = ?', req.params.email, (err, row) => {
       if(err) {
+        console.error(err)
         res.sendStatus(500)
       } else {
         if(row) res.send(JSON.parse('true'))
