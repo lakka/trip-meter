@@ -27,3 +27,4 @@ yarn-error.log*
 /server/pass
 /errorShots
 *.log
+*.pid
