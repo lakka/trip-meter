@@ -9,6 +9,7 @@ const crypto = require('crypto')
 const fs = require('fs')
 const apiToken = fs.readFileSync(path.join(__dirname, 'token'))
 const session = BPromise.promisifyAll(require('cookie-session'))
+const test = process.env.NODE_ENV == 'test'
 
 const app = express()
 
@@ -29,8 +30,10 @@ function restrict(req, res, next) {
     }
 }
 app.get('/api/check/:email', (req, serverRes) => {
-  rp(`https://script.google.com/macros/s/AKfycbyEu4c1yuHpiyo0O_LwQ-8pK6ySTgU7UkA-Wihm_YWhKaPaPtM/exec?type=emailExists&email=${req.params.email}&token=${apiToken}`)
-    .then(body => serverRes.send(JSON.parse(body).isRegistered))
+  test
+    ? serverRes.send(true)
+    : rp(`https://script.google.com/macros/s/AKfycbyEu4c1yuHpiyo0O_LwQ-8pK6ySTgU7UkA-Wihm_YWhKaPaPtM/exec?type=emailExists&email=${req.params.email}&token=${apiToken}`)
+      .then(body => serverRes.send(JSON.parse(body).isRegistered))
 })
 
 app.get('/api/exists/:email', (req, res) => {
