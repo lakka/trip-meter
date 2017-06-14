@@ -6,6 +6,7 @@ const hours = new Bacon.Bus()
 const minutes = new Bacon.Bus()
 const description = new Bacon.Bus()
 const timer = new Bacon.Bus()
+const submitted = new Bacon.Bus()
 
 const timerP = timer.toProperty().startWith('begin')
 
@@ -44,10 +45,35 @@ const submittable = time.map(currTime =>
 const timerButton = (value, action) => <input type='button' value={value} onClick={e => timer.push(action)}/>
 const lockTimeInputs = timerP.map(v => v === 'running')
 
+const validSubmissionP = submittable.and(submitted.toProperty()).filter(v => v)
+
+Bacon.combineWith(
+  (valid, time, desc) => Object.assign({}, time, {desc}),
+  validSubmissionP,
+  time.toProperty(),
+  description.toProperty())
+.onValue(form => {
+  fetch('/api/insert', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    credentials: 'same-origin',
+    body: JSON.stringify(form),
+  })
+  .then(res => res.ok ? res.json() : Promise.reject()) 
+  .then(() => browserHistory.push('/preview'))
+  .catch(console.log)
+})
+
 const renderHome = (status) =>
   <div>
     {status.map(s => s.email)}
-    <form>
+    <form onSubmit={e => {
+      e.preventDefault()
+      submitted.push(true)
+    }}>
       {
         timerP.decode({
           'begin': timerButton('Start timer', 'running'),
@@ -58,11 +84,28 @@ const renderHome = (status) =>
       <br/>
       <label>
         Hours:
-        <input id='working-hours' type='number' step='1' min='0' value={time.map('.hours')} onChange={e => hours.push(e.target.value)} disabled={lockTimeInputs}/>
+        <input
+          id='working-hours'
+          type='number'
+          step='1'
+          min='0'
+          value={time.map('.hours')}
+          onChange={e => hours.push(e.target.value)}
+          disabled={lockTimeInputs}
+        />
       </label>
       <label>
         Minutes:
-        <input id='working-minutes' type='number' step='15' min='0' max='59' value={time.map('.mins')} onChange={e => minutes.push(e.target.value)} disabled={lockTimeInputs}/>
+        <input
+          id='working-minutes'
+          type='number'
+          step='15'
+          min='0'
+          max='59'
+          value={time.map('.mins')}
+          onChange={e => minutes.push(e.target.value)}
+          disabled={lockTimeInputs}
+        />
       </label><br/>
       <label>
         Description of work:

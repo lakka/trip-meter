@@ -97,4 +97,21 @@ app.get('/api/home', restrict, (req, res) => {
   res.status(200).json({email:req.session.email})
   res.end()
 })
+
+app.post('/api/insert', restrict, (req, res) => {
+  db.runAsync("INSERT INTO working_hours VALUES ($email, $hours, $mins, $desc, DATETIME('now'))", {
+    $email: req.session.email,
+    $hours: req.body.hours,
+    $mins: req.body.mins,
+    $desc: req.body.desc
+  })
+  .then(() => {
+    res.status(200).json(req.body)
+  })
+  .catch(err => {
+    console.log(err)
+    res.sendStatus(500)
+  })
+  .finally(() => res.end())
+})
 app.listen(3001);
