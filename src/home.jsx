@@ -62,8 +62,7 @@ Bacon.combineWith(
     credentials: 'same-origin',
     body: JSON.stringify(form),
   })
-  .then(res => res.ok ? res.json() : Promise.reject()) 
-  .then(() => browserHistory.push('/preview'))
+  .then(res => res.ok ? browserHistory.push('/preview') : Promise.reject()) 
   .catch(console.log)
 })
 

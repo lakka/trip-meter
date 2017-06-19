@@ -99,19 +99,50 @@ app.get('/api/home', restrict, (req, res) => {
 })
 
 app.post('/api/insert', restrict, (req, res) => {
-  db.runAsync("INSERT INTO working_hours VALUES ($email, $hours, $mins, $desc, DATETIME('now'))", {
+  db.runAsync("INSERT INTO working_hours (email, hours, mins, desc, submitted_on) VALUES ($email, $hours, $mins, $desc, DATETIME('now'))", {
     $email: req.session.email,
     $hours: req.body.hours,
     $mins: req.body.mins,
     $desc: req.body.desc
   })
-  .then(() => {
-    res.status(200).json(req.body)
-  })
+  .then(() => res.sendStatus(204))
   .catch(err => {
-    console.log(err)
+    console.error(err)
     res.sendStatus(500)
   })
   .finally(() => res.end())
 })
-app.listen(3001);
+
+app.get('/api/preview', restrict, (req, res) => {
+  db.get("SELECT * FROM working_hours WHERE email = $email AND confirmed = 0 ORDER BY submitted_on DESC LIMIT 1",
+  {
+    $email: req.session.email
+  }, (err, row) => {
+    if(err) {
+      console.log(err)
+      res.sendStatus(500)
+      res.send(err)
+    } else {
+      if(!row) res.sendStatus(403)
+      else {
+        res.status(200).send(row)
+      }
+    }
+    res.end()
+  })
+})
+
+app.post('/api/confirm/:id', restrict, (req, res) => {
+  db.runAsync("UPDATE working_hours SET confirmed = 1 WHERE email = $email AND working_hours_id = $id", {
+    $email: req.session.email,
+    $id: req.params.id,
+  })
+  .then(() => res.sendStatus(204))
+  .catch(err => {
+    console.error(err)
+    res.sendStatus(500)
+  })
+  .finally(() => res.end())
+})
+
+app.listen(3001)
