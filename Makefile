@@ -1,8 +1,10 @@
-.PHONY: reset start test stop stopnode runtests testserver server
+.PHONY: reset reset-db start test stop stopnode runtests testserver server
 
-reset:
+reset: reset-db
 	@rm .selenium.pid
-	@node server/init-db.js
+
+reset-db:
+	@cd server && cat init-db.sql|sqlite3 db.sqlite
 
 start: .selenium.pid
 	@cd server && forever start -w -o ./server.log -e ./server.log ./app.js
