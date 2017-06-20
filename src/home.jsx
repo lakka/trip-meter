@@ -1,6 +1,7 @@
 import React from 'baret';
 import Bacon from 'baconjs';
 import { browserHistory } from 'react-router'
+import Header from './header'
 
 const hours = new Bacon.Bus()
 const minutes = new Bacon.Bus()
@@ -66,9 +67,9 @@ Bacon.combineWith(
   .catch(console.log)
 })
 
-const renderHome = (status) =>
+const Home = () =>
   <div>
-    {status.map(s => s.email)}
+  <Header/>
     <form onSubmit={e => {
       e.preventDefault()
       submitted.push(true)
@@ -113,16 +114,6 @@ const renderHome = (status) =>
       <input id='submit' type='submit' value='submit' disabled={submittable.not()}/>
     </form>
   </div>
-
-const Home = () => {
-const status = Bacon.fromPromise(fetch('/api/home', {credentials: 'same-origin'})
-  .then(res => res.ok
-    ? res.json()
-    : browserHistory.push('/login')
-  )
-)
-return renderHome(status)
-}
 
 export default Home;
 

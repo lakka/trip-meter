@@ -1,14 +1,15 @@
 import React from 'baret';
 import Bacon from 'baconjs';
 import { browserHistory } from 'react-router'
+import Header from './header'
 
 const submitBus = new Bacon.Bus()
 
 
 const render = (status, confirmationStatus) =>
   <div>
+    <Header/>
     <table>
-      <tr><td>User</td><td>{status.map('.email')}</td></tr>
       <tr><td>Working time</td><td>{status.map('.hours')}h {status.map('.mins')}min</td></tr>
       <tr><td>Description of work</td><td>{status.map('.desc')}</td></tr>
       <tr><td>Submitted on</td><td>{status.map('.submitted_on')}</td></tr>
