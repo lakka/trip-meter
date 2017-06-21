@@ -1,6 +1,6 @@
 import React from 'baret';
 import Bacon from 'baconjs';
-import { browserHistory } from 'react-router'
+import { Link, browserHistory } from 'react-router'
 import Header from './header'
 
 const submitBus = new Bacon.Bus()
@@ -16,7 +16,7 @@ const render = (status, confirmationStatus) =>
     </table>
     <input type='submit' id='confirm-button' value='confirm' onClick={() => submitBus.push(true)} hidden={confirmationStatus.map(s => s === 'success')} /> 
     {confirmationStatus.decode({
-      'success': <div>Working hours confirmed successfully!</div>,
+      'success': <div>Working hours confirmed successfully! <Link to='/home'>Go back</Link></div>,
       'fail': <div>Server error! Please try again later.</div>
     })}
   </div>
