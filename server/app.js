@@ -98,6 +98,11 @@ app.get('/api/session', restrict, (req, res) => {
   res.end()
 })
 
+app.get('/api/logout', restrict, (req, res) => {
+  req.session = null
+  res.status(204).end()
+})
+
 app.post('/api/insert', restrict, (req, res) => {
   db.runAsync("INSERT INTO working_hours (email, hours, mins, desc, submitted_on) VALUES ($email, $hours, $mins, $desc, DATETIME('now'))", {
     $email: req.session.email,
