@@ -2,6 +2,8 @@ import React from 'baret';
 import Bacon from 'baconjs';
 import { browserHistory } from 'react-router'
 import Header from './header'
+import './styles/app.css'
+
 
 const hours = new Bacon.Bus()
 const minutes = new Bacon.Bus()
@@ -43,7 +45,7 @@ const submittable = time.map(currTime =>
     .toProperty()
   ).startWith(false)
 
-const timerButton = (value, action) => <input type='button' value={value} onClick={e => timer.push(action)}/>
+const timerButton = (value, action) => <input className='centeredButton' type='button' value={value} onClick={e => timer.push(action)}/>
 const lockTimeInputs = timerP.map(v => v === 'running')
 
 const validSubmissionP = submittable.and(submitted.toProperty()).filter(v => v)
@@ -69,50 +71,54 @@ Bacon.combineWith(
 
 const Home = () =>
   <div>
-  <Header/>
-    <form onSubmit={e => {
-      e.preventDefault()
-      submitted.push(true)
-    }}>
-      {
-        timerP.decode({
-          'begin': timerButton('Start timer', 'running'),
-          'running': timerButton('Stop timer', 'paused'),
-          'paused': timerButton('Resume timer', 'running')
-        })
-      }
-      <br/>
-      <label>
-        Hours:
-        <input
-          id='working-hours'
-          type='number'
-          step='1'
-          min='0'
-          value={time.map('.hours')}
-          onChange={e => hours.push(e.target.value)}
-          disabled={lockTimeInputs}
-        />
-      </label>
-      <label>
-        Minutes:
-        <input
-          id='working-minutes'
-          type='number'
-          step='15'
-          min='0'
-          max='59'
-          value={time.map('.mins')}
-          onChange={e => minutes.push(e.target.value)}
-          disabled={lockTimeInputs}
-        />
-      </label><br/>
-      <label>
-        Description of work:
-        <textarea onChange={e => description.push(e.target.value)}/>
-      </label><br/>
-      <input id='submit' type='submit' value='submit' disabled={submittable.not()}/>
-    </form>
+    <Header/>
+    <div className='content'>
+      <form onSubmit={e => {
+        e.preventDefault()
+        submitted.push(true)
+      }}>
+        {
+          timerP.decode({
+            'begin': timerButton('start timer', 'running'),
+            'running': timerButton('stop timer', 'paused'),
+            'paused': timerButton('resume timer', 'running')
+          })
+        }
+        <br/>
+        <div className='timeInputs'>
+          <label>
+            Hours:&nbsp;
+            <input
+              id='working-hours'
+              type='number'
+              step='1'
+              min='0'
+              value={time.map('.hours')}
+              onChange={e => hours.push(e.target.value)}
+              disabled={lockTimeInputs}
+            />
+          </label>
+          <label>
+            Minutes:&nbsp;
+            <input
+              id='working-minutes'
+              type='number'
+              step='15'
+              min='0'
+              max='59'
+              value={time.map('.mins')}
+              onChange={e => minutes.push(e.target.value)}
+              disabled={lockTimeInputs}
+            />
+          </label>
+        </div>
+        <label className='description'>
+          Description of work:<br/>
+          <textarea onChange={e => description.push(e.target.value)}/>
+        </label><br/>
+        <input id='submit' className='centeredButton' type='submit' value='submit' disabled={submittable.not()}/>
+      </form>
+    </div>
   </div>
 
 export default Home;
