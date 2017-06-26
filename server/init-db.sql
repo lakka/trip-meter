@@ -45,6 +45,6 @@ VALUES
   15,
   'testidescription',
   '2017-06-18 11:41:30',
-  0
+  1
 );
 
