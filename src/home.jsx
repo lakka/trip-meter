@@ -48,13 +48,11 @@ const submittable = time.map(currTime =>
 const timerButton = (value, action) => <input className='centeredButton' type='button' value={value} onClick={e => timer.push(action)}/>
 const lockTimeInputs = timerP.map(v => v === 'running')
 
-const validSubmissionP = submittable.and(submitted.toProperty()).filter(v => v)
+const validSubmission = Bacon.when([submittable, submitted], () => true)
 
-Bacon.combineWith(
-  (valid, time, desc) => Object.assign({}, time, {desc}),
-  validSubmissionP,
-  time.toProperty(),
-  description.toProperty())
+Bacon.when(
+  [validSubmission, time.toProperty(), description.toProperty()], 
+  (valid, time, desc) => Object.assign({}, time, {desc}))
 .onValue(form => {
   fetch('/api/insert', {
     method: 'POST',
@@ -69,8 +67,17 @@ Bacon.combineWith(
   .catch(console.log)
 })
 
-const Home = () =>
-  <div>
+const Home = () => {
+  fetch('/api/preview', {credentials: 'same-origin'})
+  .then(res => res.status === 200 ? res.json() : Promise.reject()) 
+  .then(json => {
+    hours.push(json.hours)
+    minutes.push(json.mins)
+    description.push(json.desc)
+  })
+  .catch(() => null)
+
+  return  <div>
     <Header/>
     <div className='content'>
       <form onSubmit={e => {
@@ -114,12 +121,12 @@ const Home = () =>
         </div>
         <label className='description'>
           Description of work:<br/>
-          <textarea onChange={e => description.push(e.target.value)}/>
+          <textarea value={description} onChange={e => description.push(e.target.value)}/>
         </label><br/>
         <input id='submit' className='centeredButton' type='submit' value='submit' disabled={submittable.not()}/>
       </form>
     </div>
   </div>
-
+}
 export default Home;
 

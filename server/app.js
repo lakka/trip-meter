@@ -128,7 +128,7 @@ app.get('/api/preview', restrict, (req, res) => {
       res.sendStatus(500)
       res.send(err)
     } else {
-      if(!row) res.sendStatus(403)
+      if(!row) res.sendStatus(204)
       else {
         res.status(200).send(row)
       }
