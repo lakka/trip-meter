@@ -15,8 +15,9 @@ const render = (status, confirmationStatus) =>
       <tr><td>Submitted on</td><td>{status.map('.submitted_on')}</td></tr>
     </table>
     <input type='submit' id='confirm-button' value='confirm' onClick={() => submitBus.push(true)} hidden={confirmationStatus.map(s => s === 'success')} /> 
+   <Link to='/home'>Go back</Link>
     {confirmationStatus.decode({
-      'success': <div>Working hours confirmed successfully! <Link to='/home'>Go back</Link></div>,
+      'success': <div>Working hours confirmed successfully!</div>,
       'fail': <div>Server error! Please try again later.</div>
     })}
   </div>
