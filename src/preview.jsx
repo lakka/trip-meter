@@ -10,9 +10,11 @@ const render = (status, confirmationStatus) =>
   <div>
     <Header/>
     <table>
-      <tr><td>Working time</td><td>{status.map('.hours')}h {status.map('.mins')}min</td></tr>
-      <tr><td>Description of work</td><td>{status.map('.desc')}</td></tr>
-      <tr><td>Submitted on</td><td>{status.map('.submitted_on')}</td></tr>
+      <tbody>
+        <tr><td>Working time</td><td>{status.map('.hours')}h {status.map('.mins')}min</td></tr>
+        <tr><td>Description of work</td><td>{status.map('.desc')}</td></tr>
+        <tr><td>Submitted on</td><td>{status.map('.submitted_on')}</td></tr>
+      </tbody>
     </table>
     <input type='submit' id='confirm-button' value='confirm' onClick={() => submitBus.push(true)} hidden={confirmationStatus.map(s => s === 'success')} /> 
    <Link to='/home'>Go back</Link>
