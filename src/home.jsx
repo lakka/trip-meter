@@ -69,7 +69,7 @@ Bacon.when(
 
 const Home = () => {
   fetch('/api/preview', {credentials: 'same-origin'})
-  .then(res => res.status === 200 ? res.json() : Promise.reject()) 
+  .then(res => res.status === 200 ? res.json() : Promise.reject(res.status)) 
   .then(json => {
     hours.push(json.hours)
     minutes.push(json.mins)
@@ -121,7 +121,7 @@ const Home = () => {
         </div>
         <label className='description'>
           Description of work:<br/>
-          <textarea value={description} onChange={e => description.push(e.target.value)}/>
+          <textarea value={description.toProperty().startWith('')} onChange={e => description.push(e.target.value)}/>
         </label><br/>
         <input id='submit' className='centeredButton' type='submit' value='submit' disabled={submittable.not()}/>
       </form>
